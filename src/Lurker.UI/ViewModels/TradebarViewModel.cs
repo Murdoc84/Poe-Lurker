@@ -204,9 +204,16 @@ namespace Lurker.UI.ViewModels
         /// <param name="e">The PLayerJoined Event.</param>
         private void Lurker_PlayerJoined(object sender, PlayerJoinedEvent e)
         {
+            var playNotification = false;
             foreach (var offer in this.TradeOffers.Where(o => o.PlayerName == e.PlayerName))
             {
+                playNotification = true;
                 offer.BuyerInSameInstance = true;
+            }
+
+            if (playNotification)
+            {
+                this._soundService.PlayJoinHideout(this.SettingsService.JoinHideoutVolume);
             }
         }
 
@@ -265,6 +272,8 @@ namespace Lurker.UI.ViewModels
 
                     offer.Dispose();
                 });
+
+                this.DockingHelper.SetForeground();
             }
         }
 
