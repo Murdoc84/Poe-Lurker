@@ -326,12 +326,12 @@ namespace Lurker.UI.ViewModels
         {
             get
             {
-                return this._settingService.AlertEnabled;
+                return this._settingService.JoinHideoutEnabled;
             }
 
             set
             {
-                this._settingService.AlertEnabled = value;
+                this._settingService.JoinHideoutEnabled = value;
                 this.NotifyOfPropertyChange();
             }
         }
@@ -553,6 +553,23 @@ namespace Lurker.UI.ViewModels
             set
             {
                 this._settingService.BuildHelper = value;
+                this.NotifyOfPropertyChange();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [sold detection].
+        /// </summary>
+        public bool SoldDetection
+        {
+            get
+            {
+                return this._settingService.SoldDetection;
+            }
+
+            set
+            {
+                this._settingService.SoldDetection = value;
                 this.NotifyOfPropertyChange();
             }
         }

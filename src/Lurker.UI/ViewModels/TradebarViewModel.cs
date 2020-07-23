@@ -131,6 +131,11 @@ namespace Lurker.UI.ViewModels
         /// <param name="tradeEvent">The trade event.</param>
         private bool CheckIfOfferIsAlreadySold(TradeEvent tradeEvent)
         {
+            if (!this.SettingsService.SoldDetection)
+            {
+                return false;
+            }
+
             var location = tradeEvent.Location.ToString();
             var defaultLocation = new Location().ToString();
             if (location != defaultLocation)
@@ -211,7 +216,7 @@ namespace Lurker.UI.ViewModels
                 offer.BuyerInSameInstance = true;
             }
 
-            if (playNotification)
+            if (playNotification && this.SettingsService.JoinHideoutEnabled)
             {
                 this._soundService.PlayJoinHideout(this.SettingsService.JoinHideoutVolume);
             }
