@@ -218,6 +218,40 @@ namespace Lurker.UI.ViewModels
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [incoming trade enabled].
+        /// </summary>
+        public bool IncomingTradeEnabled
+        {
+            get
+            {
+                return this._settingService.IncomingTradeEnabled;
+            }
+
+            set
+            {
+                this._settingService.IncomingTradeEnabled = value;
+                this.NotifyOfPropertyChange();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [outgoing trade enabled].
+        /// </summary>
+        public bool OutgoingTradeEnabled
+        {
+            get
+            {
+                return this._settingService.OutgoingTradeEnabled;
+            }
+
+            set
+            {
+                this._settingService.OutgoingTradeEnabled = value;
+                this.NotifyOfPropertyChange();
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [remaining monster enabled].
         /// </summary>
         public bool RemainingMonsterEnabled
@@ -574,6 +608,23 @@ namespace Lurker.UI.ViewModels
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show release note].
+        /// </summary>
+        public bool ShowReleaseNote
+        {
+            get
+            {
+                return this._settingService.ShowReleaseNote;
+            }
+
+            set
+            {
+                this._settingService.ShowReleaseNote = value;
+                this.NotifyOfPropertyChange();
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -589,25 +640,25 @@ namespace Lurker.UI.ViewModels
         /// <summary>
         /// Inserts the buyer name token.
         /// </summary>
-        public void InsertBuyerNameToken()
+        public async void InsertBuyerNameToken()
         {
-            this._keyboardHelper.Write(TokenHelper.BuyerName);
+            await this._keyboardHelper.Write(TokenHelper.BuyerName);
         }
 
         /// <summary>
         /// Inserts the price token.
         /// </summary>
-        public void InsertPriceToken()
+        public async void InsertPriceToken()
         {
-            this._keyboardHelper.Write(TokenHelper.Price);
+            await this._keyboardHelper.Write(TokenHelper.Price);
         }
 
         /// <summary>
         /// Inserts the item name token.
         /// </summary>
-        public void InsertItemNameToken()
+        public async void InsertItemNameToken()
         {
-            this._keyboardHelper.Write(TokenHelper.ItemName);
+            await this._keyboardHelper.Write(TokenHelper.ItemName);
         }
 
         /// <summary>

@@ -28,18 +28,20 @@ namespace Lurker.UI
     /// <summary>
     /// Represents the SHellViewModel.
     /// </summary>
-    public class ShellViewModel : Conductor<Screen>.Collection.AllActive, IViewAware, IHandle<Screen>
+    public class ShellViewModel : Conductor<Screen>.Collection.AllActive, IViewAware, IHandle<Screen>, IHandle<SkillTimelineMessage>
     {
         #region Fields
 
         private SimpleContainer _container;
         private ProcessLurker _processLurker;
         private ClientLurker _currentLurker;
+        private CharacterService _currentCharacterService;
         private MouseLurker _mouseLurker;
         private KeyboardLurker _keyboardLurker;
         private DockingHelper _currentDockingHelper;
         private ClipboardLurker _clipboardLurker;
         private TradebarViewModel _incomingTradeBarOverlay;
+        private BuildTimelineViewModel _skillTimelineOverlay;
         private OutgoingbarViewModel _outgoingTradeBarOverlay;
         private LifeBulbViewModel _lifeBulbOverlay;
         private ManaBulbViewModel _manaBulbOverlay;
@@ -93,7 +95,11 @@ namespace Lurker.UI
                 settingsService.FirstLaunch = false;
                 this._showUpdateSuccess = true;
                 settingsService.Save(false);
-                Process.Start("https://github.com/C1rdec/Poe-Lurker/releases/latest");
+
+                if (settingsService.ShowReleaseNote)
+                {
+                    Process.Start("https://github.com/C1rdec/Poe-Lurker/releases/latest");
+                }
             }
 
             this._eventAggregator.Subscribe(this);
@@ -335,6 +341,11 @@ namespace Lurker.UI
                     this._helpOverlay = this._container.GetInstance<HelpViewModel>();
                     this._helpOverlay.Initialize(this.ToggleBuildHelper);
                     this.ActivateItem(this._helpOverlay);
+
+                    if (this._skillTimelineOverlay != null && this._settingsService.BuildHelperSettings.TimelineEnabled)
+                    {
+                        this.ActivateItem(this._skillTimelineOverlay);
+                    }
                 }
             }
             else
@@ -349,6 +360,29 @@ namespace Lurker.UI
                 {
                     this.DeactivateItem(this._buildViewModel, true);
                 }
+
+                if (this._skillTimelineOverlay != null)
+                {
+                    this.DeactivateItem(this._skillTimelineOverlay, true);
+                }
+            }
+
+            if (this._settingsService.IncomingTradeEnabled)
+            {
+                this.ActivateItem(this._incomingTradeBarOverlay);
+            }
+            else
+            {
+                this.DeactivateItem(this._incomingTradeBarOverlay, true);
+            }
+
+            if (this._settingsService.OutgoingTradeEnabled)
+            {
+                this.ActivateItem(this._outgoingTradeBarOverlay);
+            }
+            else
+            {
+                this.DeactivateItem(this._outgoingTradeBarOverlay, true);
             }
         }
 
@@ -374,10 +408,12 @@ namespace Lurker.UI
 
                 this._container.RegisterInstance(typeof(ProcessLurker), null, this._processLurker);
                 this._container.RegisterInstance(typeof(ClientLurker), null, this._currentLurker);
+                this._container.RegisterInstance(typeof(CharacterService), null, this._currentCharacterService);
                 this._container.RegisterInstance(typeof(ClipboardLurker), null, this._clipboardLurker);
                 this._container.RegisterInstance(typeof(DockingHelper), null, this._currentDockingHelper);
                 this._container.RegisterInstance(typeof(PoeKeyboardHelper), null, keyboarHelper);
 
+                this._skillTimelineOverlay = this._container.GetInstance<BuildTimelineViewModel>();
                 this._incomingTradeBarOverlay = this._container.GetInstance<TradebarViewModel>();
                 this._outgoingTradeBarOverlay = this._container.GetInstance<OutgoingbarViewModel>();
                 this._lifeBulbOverlay = this._container.GetInstance<LifeBulbViewModel>();
@@ -393,8 +429,21 @@ namespace Lurker.UI
                     this.ActivateItem(this._helpOverlay);
                 }
 
-                this.ActivateItem(this._incomingTradeBarOverlay);
-                this.ActivateItem(this._outgoingTradeBarOverlay);
+                if (this._settingsService.IncomingTradeEnabled)
+                {
+                    this.ActivateItem(this._incomingTradeBarOverlay);
+                }
+
+                if (this._settingsService.OutgoingTradeEnabled)
+                {
+                    this.ActivateItem(this._outgoingTradeBarOverlay);
+                }
+
+                if (this._settingsService.BuildHelperSettings.TimelineEnabled)
+                {
+                    this.ActivateItem(this._skillTimelineOverlay);
+                }
+
                 this.ActivateItem(this._lifeBulbOverlay);
                 this.ActivateItem(this._manaBulbOverlay);
                 this.ActivateItem(this._hideoutOverlay);
@@ -420,7 +469,11 @@ namespace Lurker.UI
         /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         private async void PoeClosed(object sender, EventArgs e)
         {
-            await this._openingTask;
+            if (this._openingTask != null)
+            {
+                await this._openingTask;
+            }
+
             this.CleanUp();
             this._openingTask = this.WaitForPoe(true);
         }
@@ -431,6 +484,7 @@ namespace Lurker.UI
         private void CleanUp()
         {
             this._container.UnregisterHandler<ClientLurker>();
+            this._container.UnregisterHandler<CharacterService>();
             this._container.UnregisterHandler<ProcessLurker>();
             this._container.UnregisterHandler<DockingHelper>();
             this._container.UnregisterHandler<PoeKeyboardHelper>();
@@ -448,6 +502,11 @@ namespace Lurker.UI
                 this._currentLurker.AdminRequested -= this.CurrentLurker_AdminRequested;
                 this._currentLurker.Dispose();
                 this._currentLurker = null;
+            }
+
+            if (this._currentCharacterService != null)
+            {
+                this._currentCharacterService.Dispose();
             }
 
             if (this._processLurker != null)
@@ -497,6 +556,8 @@ namespace Lurker.UI
             // Client Lurker
             this._currentLurker = new ClientLurker(process);
             this._currentLurker.AdminRequested += this.CurrentLurker_AdminRequested;
+
+            this._currentCharacterService = new CharacterService(this._currentLurker);
 
             if (this._closing)
             {
@@ -601,6 +662,22 @@ namespace Lurker.UI
             }
 
             this.ActivateItem(screen);
+        }
+
+        /// <summary>
+        /// Handles the message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public void Handle(SkillTimelineMessage message)
+        {
+            if (message.IsVisible)
+            {
+                this.ActivateItem(this._skillTimelineOverlay);
+            }
+            else
+            {
+                this.DeactivateItem(this._skillTimelineOverlay, true);
+            }
         }
 
         /// <summary>

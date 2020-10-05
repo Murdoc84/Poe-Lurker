@@ -6,7 +6,7 @@
 
 namespace Lurker.Helpers
 {
-    using System.Diagnostics;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Represents the PoeKeyboardHelper.
@@ -32,53 +32,59 @@ namespace Lurker.Helpers
         /// <summary>
         /// Destroys this instance.
         /// </summary>
-        public void Destroy()
+        /// <returns>The task.</returns>
+        public async Task Destroy()
         {
-            this.SendCommand("/destroy");
+            await this.SendCommand("/destroy");
         }
 
         /// <summary>
         /// Remainings the monster.
         /// </summary>
-        public void RemainingMonster()
+        /// <returns>The task.</returns>
+        public async Task RemainingMonster()
         {
-            this.SendCommand("/remaining");
+            await this.SendCommand("/remaining");
         }
 
         /// <summary>
         /// Whoes the is.
         /// </summary>
         /// <param name="playerName">Name of the player.</param>
-        public void WhoIs(string playerName)
+        /// <returns>The task.</returns>
+        public async Task WhoIs(string playerName)
         {
-            this.SendCommand($@"/whois {playerName}");
+            await this.SendCommand($@"/whois {playerName}");
         }
 
         /// <summary>
         /// Invites to party.
         /// </summary>
         /// <param name="playerName">Name of the player.</param>
-        public void Invite(string playerName)
+        /// <returns>The task.</returns>
+        public async Task Invite(string playerName)
         {
-            this.SendCommand($@"/invite {playerName}");
+            await this.SendCommand($@"/invite {playerName}");
         }
 
         /// <summary>
         /// Kicks the specified player name.
         /// </summary>
         /// <param name="playerName">Name of the player.</param>
-        public void Kick(string playerName)
+        /// <returns>The task.</returns>
+        public async Task Kick(string playerName)
         {
-            this.SendCommand($@"/kick {playerName}");
+            await this.SendCommand($@"/kick {playerName}");
         }
 
         /// <summary>
         /// Trades the specified character name.
         /// </summary>
         /// <param name="playerName">Name of the player.</param>
-        public void Trade(string playerName)
+        /// <returns>The task.</returns>
+        public async Task Trade(string playerName)
         {
-            this.SendCommand($@"/tradewith {playerName}");
+            await this.SendCommand($@"/tradewith {playerName}");
         }
 
         /// <summary>
@@ -86,41 +92,59 @@ namespace Lurker.Helpers
         /// </summary>
         /// <param name="playerName">Name of the character.</param>
         /// <param name="message">The message.</param>
-        public void Whisper(string playerName, string message)
+        /// <returns>The task.</returns>
+        public async Task Whisper(string playerName, string message)
         {
-            this.SendCommand($@"@{playerName} {message}");
+            await this.Whisper(playerName, message, true);
+        }
+
+        /// <summary>
+        /// Whispers the specified character name.
+        /// </summary>
+        /// <param name="playerName">Name of the character.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="setForeground">if set to <c>true</c> [set foreground].</param>
+        /// <returns>
+        /// The task.
+        /// </returns>
+        public async Task Whisper(string playerName, string message, bool setForeground)
+        {
+            await this.SendCommand($@"@{playerName} {message}", setForeground);
         }
 
         /// <summary>
         /// Sends the message.
         /// </summary>
         /// <param name="message">The message.</param>
-        public void SendMessage(string message)
+        /// <returns>The task.</returns>
+        public async Task SendMessage(string message)
         {
-            this.SendCommand(message);
+            await this.SendCommand(message);
         }
 
         /// <summary>
         /// Joins the hideout.
         /// </summary>
-        public void JoinHideout()
+        /// <returns>The task.</returns>
+        public async Task JoinHideout()
         {
-            this.JoinHideout(null);
+            await this.JoinHideout(null);
         }
 
         /// <summary>
         /// Joins the hideout.
         /// </summary>
         /// <param name="playerName">Name of the player.</param>
-        public void JoinHideout(string playerName)
+        /// <returns>The task.</returns>
+        public async Task JoinHideout(string playerName)
         {
             if (string.IsNullOrEmpty(playerName))
             {
-                this.SendCommand($@"/hideout");
+                await this.SendCommand($@"/hideout");
                 return;
             }
 
-            this.SendCommand($@" /hideout {playerName}");
+            await this.SendCommand($@"/hideout {playerName}");
         }
 
         #endregion

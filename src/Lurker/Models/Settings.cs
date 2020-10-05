@@ -17,6 +17,11 @@ namespace Lurker.Models
         #region Properties
 
         /// <summary>
+        /// Gets or sets the build helper settings.
+        /// </summary>
+        public BuildHelperSettings BuildHelperSettings { get; set; }
+
+        /// <summary>
         /// Gets or sets the user identifier.
         /// </summary>
         public string UserId { get; set; }
@@ -45,6 +50,18 @@ namespace Lurker.Models
         /// Gets or sets a value indicating whether [first launch].
         /// </summary>
         public bool FirstLaunch { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [incoming trade enabled].
+        /// </summary>
+        [DefaultValue(true)]
+        public bool IncomingTradeEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [outgoing trade enabled].
+        /// </summary>
+        [DefaultValue(true)]
+        public bool OutgoingTradeEnabled { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [search enabled].
@@ -162,6 +179,12 @@ namespace Lurker.Models
         /// </summary>
         [DefaultValue(true)]
         public bool SoldDetection { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show release note].
+        /// </summary>
+        [DefaultValue(true)]
+        public bool ShowReleaseNote { get; set; }
 
         #endregion
     }

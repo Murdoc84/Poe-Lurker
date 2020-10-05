@@ -79,6 +79,11 @@ namespace Lurker.Services
         #region Properties
 
         /// <summary>
+        /// Gets the build helper settings.
+        /// </summary>
+        public BuildHelperSettings BuildHelperSettings => this._settings.BuildHelperSettings;
+
+        /// <summary>
         /// Gets the user identifier.
         /// </summary>
         public string UserId => this._settings.UserId;
@@ -160,6 +165,38 @@ namespace Lurker.Services
             set
             {
                 this._settings.StillInterestedMessage = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [incoming trade enabled].
+        /// </summary>
+        public bool IncomingTradeEnabled
+        {
+            get
+            {
+                return this._settings.IncomingTradeEnabled;
+            }
+
+            set
+            {
+                this._settings.IncomingTradeEnabled = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [outgoing trade enabled].
+        /// </summary>
+        public bool OutgoingTradeEnabled
+        {
+            get
+            {
+                return this._settings.OutgoingTradeEnabled;
+            }
+
+            set
+            {
+                this._settings.OutgoingTradeEnabled = value;
             }
         }
 
@@ -496,6 +533,22 @@ namespace Lurker.Services
             set
             {
                 this._settings.SoldDetection = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show release note].
+        /// </summary>
+        public bool ShowReleaseNote
+        {
+            get
+            {
+                return this._settings.ShowReleaseNote;
+            }
+
+            set
+            {
+                this._settings.ShowReleaseNote = value;
             }
         }
 

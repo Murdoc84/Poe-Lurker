@@ -7,18 +7,19 @@
 namespace Lurker.Models
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Xml.Linq;
     using HtmlAgilityPack;
+    using Lurker.Helpers;
 
     /// <summary>
     /// Represents a gem.
     /// </summary>
-    public class Gem
+    public class Gem : WikiItem
     {
         #region Fields
 
-        private static readonly string WikiBaseUri = "https://pathofexile.gamepedia.com/";
         private static readonly string SupportValue = "Support";
 
         #endregion
@@ -31,24 +32,14 @@ namespace Lurker.Models
         public string Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets a value indicating whether this <see cref="Gem"/> is support.
         /// </summary>
-        public string Name { get; set; }
+        public bool Support { get; set; }
 
         /// <summary>
-        /// Gets or sets the level.
+        /// Gets or sets the location.
         /// </summary>
-        public int Level { get; set; }
-
-        /// <summary>
-        /// Gets or sets the wiki URL.
-        /// </summary>
-        public Uri WikiUrl { get; set; }
-
-        /// <summary>
-        /// Gets or sets the image URL.
-        /// </summary>
-        public Uri ImageUrl { get; set; }
+        public GemLocation Location { get; set; }
 
         #endregion
 
@@ -72,7 +63,7 @@ namespace Lurker.Models
             return new Gem()
             {
                 Name = name,
-                WikiUrl = CreateGemUri(name),
+                WikiUrl = WikiHelper.CreateItemUri(name),
                 Id = element.Attribute("skillId").Value,
             };
         }
@@ -80,40 +71,109 @@ namespace Lurker.Models
         /// <summary>
         /// Sets the URL.
         /// </summary>
-        public void SetUrl()
+        public void ParseWiki()
         {
-            this.WikiUrl = CreateGemUri(this.Name);
+            this.WikiUrl = WikiHelper.CreateItemUri(this.Name);
 
-            var webPage = new HtmlWeb();
-            var fileUrl = $"https://pathofexile.gamepedia.com/File:{System.Net.WebUtility.UrlEncode(this.Name.Replace(" ", "_"))}_inventory_icon.png";
-            var document = webPage.Load(fileUrl);
-            var mediaElement = document.DocumentNode.Descendants().Where(e => e.Name == "div" && e.GetAttributeValue("class", string.Empty) == "fullMedia").FirstOrDefault();
-            if (mediaElement == null)
+            this.SetImageUrl();
+            this.SetLocation();
+        }
+
+        /// <summary>
+        /// Sets the image URL.
+        /// </summary>
+        private void SetImageUrl()
+        {
+            try
             {
-                return;
+                this.ImageUrl = WikiHelper.GetItemImageUrl(this.Name);
             }
-
-            var hyperlink = mediaElement.Descendants().Where(e => e.Name == "a").FirstOrDefault();
-            if (hyperlink != null)
+            catch (InvalidOperationException)
             {
-                var href = hyperlink.Attributes.Where(a => a.Name == "href").FirstOrDefault();
-                if (href != null)
-                {
-                    this.ImageUrl = new Uri(href.Value);
-                }
             }
         }
 
         /// <summary>
-        /// Creates the gem URI.
+        /// Sets the location.
         /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>The wiki url.</returns>
-        private static Uri CreateGemUri(string name)
+        private void SetLocation()
         {
-            // replace space encodes with '_' to match the link layout of the poe wiki and then url encode it
-            var itemLink = System.Net.WebUtility.UrlEncode(name.Replace(" ", "_"));
-            return new Uri(WikiBaseUri + itemLink);
+            var webPage = new HtmlWeb();
+            var document = webPage.Load(this.WikiUrl);
+            var vendorRewardSpan = document.DocumentNode.Descendants().FirstOrDefault(e => e.Name == "span" && e.GetAttributeValue("id", string.Empty) == "Vendor_reward");
+
+            if (vendorRewardSpan == null)
+            {
+                return;
+            }
+
+            var h3Element = vendorRewardSpan.ParentNode;
+            var sibling = h3Element.NextSibling;
+            var siblingCount = 0;
+            while (sibling.Name != "table")
+            {
+                if (siblingCount >= 10)
+                {
+                    return;
+                }
+
+                sibling = sibling.NextSibling;
+                siblingCount++;
+            }
+
+            var tableBody = sibling.Descendants().FirstOrDefault(e => e.Name == "tbody");
+            if (tableBody == null)
+            {
+                return;
+            }
+
+            var classRow = tableBody.ChildNodes.FirstOrDefault();
+            if (classRow == null)
+            {
+                return;
+            }
+
+            var questRow = tableBody.ChildNodes.ElementAt(2);
+            var questHeader = questRow.ChildNodes.FirstOrDefault(c => c.Name == "th");
+            var gemLocation = new GemLocation();
+            var texts = questHeader.Descendants().Where(e => e.Name == "#text").Select(e => e.InnerText);
+            if (texts.Count() >= 3)
+            {
+                gemLocation.Quest = texts.ElementAt(0);
+                gemLocation.Act = texts.ElementAt(1);
+                gemLocation.Npc = texts.ElementAt(2);
+            }
+
+            // ✗; ✓
+            var availabilities = questRow.Descendants().Where(e => e.Name == "td").Select(e => e.InnerText);
+            var classValues = classRow.Descendants().Where(e => e.Name == "a").Select(e => e.InnerText);
+            var classes = new List<Class>();
+
+            // All Classes
+            if (availabilities.Count() == 1)
+            {
+                classes.Add(Class.Witch);
+                classes.Add(Class.Shadow);
+                classes.Add(Class.Ranger);
+                classes.Add(Class.Duelist);
+                classes.Add(Class.Marauder);
+                classes.Add(Class.Templar);
+                classes.Add(Class.Scion);
+            }
+            else
+            {
+                for (int i = 0; i < availabilities.Count(); i++)
+                {
+                    if (availabilities.ElementAt(i) == "✓")
+                    {
+                        var classValue = classValues.ElementAt(i);
+                        classes.Add((Class)Enum.Parse(typeof(Class), classValue));
+                    }
+                }
+            }
+
+            gemLocation.Classes = classes;
+            this.Location = gemLocation;
         }
 
         #endregion

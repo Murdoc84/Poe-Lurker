@@ -24,9 +24,9 @@ namespace Lurker.Models
         #region Constructors
 
         /// <summary>
-        /// Prevents a default instance of the <see cref="Skill"/> class from being created.
+        /// Initializes a new instance of the <see cref="Skill"/> class.
         /// </summary>
-        private Skill()
+        public Skill()
         {
             this._gems = new List<Gem>();
         }
@@ -66,7 +66,13 @@ namespace Lurker.Models
 
             foreach (var gemElement in element.Elements())
             {
-                var gemId = gemElement.Attribute("skillId").Value;
+                var attribute = gemElement.Attribute("skillId");
+                if (attribute == null)
+                {
+                    continue;
+                }
+
+                var gemId = attribute.Value;
                 var gem = knownGems.FirstOrDefault(g => g.Id == gemId);
                 if (gem == null)
                 {
@@ -90,6 +96,40 @@ namespace Lurker.Models
         public void AddGem(Gem gem)
         {
             this._gems.Add(gem);
+        }
+
+        /// <summary>
+        /// Determines whether the specified, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The  to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
+        public override bool Equals(object obj)
+        {
+            var skill = obj as Skill;
+            if (skill == null)
+            {
+                return false;
+            }
+
+            if (skill.Gems.Count() != this.Gems.Count())
+            {
+                return false;
+            }
+
+            for (int i = 0; i < skill.Gems.Count(); i++)
+            {
+                var gem = skill.Gems.ElementAt(i);
+                var myGem = this.Gems.ElementAt(i);
+
+                if (gem.Id != myGem.Id || gem.Name != myGem.Name)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         #endregion

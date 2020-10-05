@@ -93,8 +93,8 @@
     <Reference Include="LottieSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\LottieSharp.1.0.0\lib\net461\LottieSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Lurker.Patreon, Version=1.0.20.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Lurker.Patreon.1.0.20\lib\net48\Lurker.Patreon.dll</HintPath>
+    <Reference Include="Lurker.Patreon, Version=1.0.23.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Lurker.Patreon.1.0.23\lib\net48\Lurker.Patreon.dll</HintPath>
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MahApps.Metro.1.6.5\lib\net47\MahApps.Metro.dll</HintPath>
@@ -208,8 +208,8 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="WindowsInput, Version=1.0.4.0, Culture=neutral, PublicKeyToken=9b287f7dc5073cad, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\InputSimulator.1.0.4.0\lib\net20\WindowsInput.dll</HintPath>
+    <Reference Include="WindowsInput, Version=6.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\WindowsInput.6.1.1\lib\net461\WindowsInput.dll</HintPath>
     </Reference>
     <Reference Include="Xceed.Wpf.AvalonDock, Version=3.8.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Extended.Wpf.Toolkit.3.8.1\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
@@ -233,13 +233,19 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AppBootstrapper.cs" />
+    <Compile Include="Converters\PoeClassConverter.cs" />
     <Compile Include="Converters\CurrencyTypeConverter.cs" />
     <Compile Include="Extensions\ObservableCollectionExtension.cs" />
     <Compile Include="Extensions\PriceExtension.cs" />
     <Compile Include="Helpers\AdminRequestHelper.cs" />
     <Compile Include="Helpers\UpdateManager.cs" />
+    <Compile Include="Models\ItemMessage.cs" />
     <Compile Include="Models\League.cs" />
     <Compile Include="Models\MyCommand.cs" />
+    <Compile Include="Models\SkillMessage.cs" />
+    <Compile Include="Models\SkillTimelineMessage.cs" />
+    <Compile Include="Models\TimelineInformation.cs" />
+    <Compile Include="Models\TimelineMessage.cs" />
     <Compile Include="Models\UpdateState.cs" />
     <Compile Include="Models\DoubleClickCommand.cs" />
     <Compile Include="Models\BulbMessage.cs" />
@@ -248,6 +254,7 @@
     <Compile Include="Models\OutgoingbarContext.cs" />
     <Compile Include="Models\TradebarContext.cs" />
     <Compile Include="Services\AfkService.cs" />
+    <Compile Include="Services\TimelineController.cs" />
     <Compile Include="Svg.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -257,6 +264,7 @@
     <Compile Include="ViewModels\BuildViewModel.cs" />
     <Compile Include="ViewModels\ChartViewModelBase.cs" />
     <Compile Include="ViewModels\CollaborationViewModel.cs" />
+    <Compile Include="ViewModels\GemLocationViewModel.cs" />
     <Compile Include="ViewModels\GemViewModel.cs" />
     <Compile Include="ViewModels\HelpViewModel.cs" />
     <Compile Include="ViewModels\HideoutViewModel.cs" />
@@ -276,11 +284,16 @@
     <Compile Include="ViewModels\RemainingMonsterViewModel.cs" />
     <Compile Include="ViewModels\ScreenBase.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
+    <Compile Include="ViewModels\BuildTimelineViewModel.cs" />
     <Compile Include="ViewModels\SkillViewModel.cs" />
     <Compile Include="ViewModels\SplashscreenViewModel.cs" />
+    <Compile Include="ViewModels\TimelineItemViewModel.cs" />
+    <Compile Include="ViewModels\TimelineViewModel.cs" />
     <Compile Include="ViewModels\TradebarViewModel.cs" />
     <Compile Include="ViewModels\TradeValueViewModel.cs" />
+    <Compile Include="ViewModels\UniqueItemViewModel.cs" />
     <Compile Include="ViewModels\UpdateViewModel.cs" />
+    <Compile Include="ViewModels\WikiItemBaseViewModel.cs" />
     <Compile Include="Views\AffixView.xaml.cs">
       <DependentUpon>AffixView.xaml</DependentUpon>
     </Compile>
@@ -295,6 +308,9 @@
     </Compile>
     <Compile Include="Views\DashboardView.xaml.cs">
       <DependentUpon>DashboardView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\GemLocationView.xaml.cs">
+      <DependentUpon>GemLocationView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\GemView.xaml.cs">
       <DependentUpon>GemView.xaml</DependentUpon>
@@ -344,11 +360,20 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ViewModels\OfferViewModel.cs" />
+    <Compile Include="Views\BuildTimelineView.xaml.cs">
+      <DependentUpon>BuildTimelineView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SkillView.xaml.cs">
       <DependentUpon>SkillView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SplashscreenView.xaml.cs">
       <DependentUpon>SplashscreenView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TimelineItemView.xaml.cs">
+      <DependentUpon>TimelineItemView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TimelineView.xaml.cs">
+      <DependentUpon>TimelineView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\TradebarView.xaml.cs">
       <DependentUpon>TradebarView.xaml</DependentUpon>
@@ -358,6 +383,9 @@
     </Compile>
     <Compile Include="Views\TradeValueView.xaml.cs">
       <DependentUpon>TradeValueView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\UniqueItemView.xaml.cs">
+      <DependentUpon>UniqueItemView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\UpdateView.xaml.cs">
       <DependentUpon>UpdateView.xaml</DependentUpon>
@@ -379,6 +407,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DashboardView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\GemLocationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -438,11 +470,23 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\BuildTimelineView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\SkillView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\SplashscreenView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TimelineItemView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\TimelineView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -455,6 +499,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TradeValueView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\UniqueItemView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -547,6 +595,14 @@
   <ItemGroup>
     <Resource Include="Assets\Gemcutter.png" />
     <Resource Include="Assets\Chisel.png" />
+    <Resource Include=".nuget\mouse-keyboard-hook-logo.png" />
+    <Resource Include="Assets\Duelist.png" />
+    <Resource Include="Assets\Marauder.png" />
+    <Resource Include="Assets\Ranger.png" />
+    <Resource Include="Assets\Scion.png" />
+    <Resource Include="Assets\Shadow.png" />
+    <Resource Include="Assets\Templar.png" />
+    <Resource Include="Assets\Witch.png" />
     <Content Include="SVG\Beer.svg" />
     <Content Include="SVG\Help.svg" />
     <Content Include="SVG\Hideout.svg" />
