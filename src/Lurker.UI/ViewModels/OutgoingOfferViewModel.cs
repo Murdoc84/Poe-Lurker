@@ -185,7 +185,17 @@ namespace Lurker.UI.ViewModels
         public void RemoveCore(bool setForeground)
         {
             this._skipMainAction = true;
-            this._barContext.RemoveOffer(this);
+            var controlPressed = false;
+            Execute.OnUIThread(() => controlPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl));
+            if (controlPressed)
+            {
+                this._barContext.ClearAll();
+            }
+            else
+            {
+                this._barContext.RemoveOffer(this);
+            }
+
             if (setForeground)
             {
                 this._dockingHelper.SetForeground();

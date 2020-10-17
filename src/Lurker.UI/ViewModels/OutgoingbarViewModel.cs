@@ -27,6 +27,7 @@ namespace Lurker.UI.ViewModels
     {
         #region Fields
 
+        private PlayerService _playerService;
         private ClipboardLurker _clipboardLurker;
         private ClientLurker _clientLurker;
         private PoeKeyboardHelper _keyboardHelper;
@@ -53,7 +54,8 @@ namespace Lurker.UI.ViewModels
         /// <param name="keyboardHelper">The keyboard helper.</param>
         /// <param name="settingsService">The settings service.</param>
         /// <param name="windowManager">The window manager.</param>
-        public OutgoingbarViewModel(IEventAggregator eventAggregator, ClipboardLurker clipboardLurker, ClientLurker clientLurker, ProcessLurker processLurker, DockingHelper dockingHelper, PoeKeyboardHelper keyboardHelper, SettingsService settingsService, IWindowManager windowManager)
+        /// <param name="playerService">The player service.</param>
+        public OutgoingbarViewModel(IEventAggregator eventAggregator, ClipboardLurker clipboardLurker, ClientLurker clientLurker, ProcessLurker processLurker, DockingHelper dockingHelper, PoeKeyboardHelper keyboardHelper, SettingsService settingsService, IWindowManager windowManager, PlayerService playerService)
             : base(windowManager, dockingHelper, processLurker, settingsService)
         {
             this.Offers = new ObservableCollection<OutgoingOfferViewModel>();
@@ -64,12 +66,12 @@ namespace Lurker.UI.ViewModels
             this._clipboardLurker = clipboardLurker;
             this._eventAggregator = eventAggregator;
             this._clientLurker = clientLurker;
+            this._playerService = playerService;
 
-            this._clipboardLurker.NewOffer += this.ClipboardLurker_NewOffer;
-            this._clientLurker.OutgoingOffer += this.Lurker_OutgoingOffer;
-            this._clientLurker.TradeAccepted += this.Lurker_TradeAccepted;
             this.Offers.CollectionChanged += this.Offers_CollectionChanged;
-            this._context = new OutgoingbarContext(this.RemoveOffer, this.SetActiveOffer);
+            this._clipboardLurker.NewOffer += this.ClipboardLurker_NewOffer;
+
+            this._context = new OutgoingbarContext(this.RemoveOffer, this.SetActiveOffer, this.ClearAll);
         }
 
         #endregion
@@ -117,6 +119,32 @@ namespace Lurker.UI.ViewModels
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Called when activating.
+        /// </summary>
+        protected override void OnActivate()
+        {
+            this._clientLurker.OutgoingOffer += this.Lurker_OutgoingOffer;
+            this._clientLurker.TradeAccepted += this.Lurker_TradeAccepted;
+
+            base.OnActivate();
+        }
+
+        /// <summary>
+        /// Called when deactivating.
+        /// </summary>
+        /// <param name="close">Inidicates whether this instance will be closed.</param>
+        protected override void OnDeactivate(bool close)
+        {
+            if (close)
+            {
+                this._clientLurker.OutgoingOffer -= this.Lurker_OutgoingOffer;
+                this._clientLurker.TradeAccepted -= this.Lurker_TradeAccepted;
+            }
+
+            base.OnDeactivate(close);
+        }
 
         /// <summary>
         /// Called when [search value change].
@@ -223,6 +251,12 @@ namespace Lurker.UI.ViewModels
                 await this._keyboardHelper.Whisper(tradeEvent.PlayerName, TokenHelper.ReplaceToken(this.SettingsService.ThankYouMessage, tradeEvent));
             }
 
+            var activePlayer = this._playerService.FirstPlayer;
+            if (activePlayer != null && this.SettingsService.AutoKickEnabled)
+            {
+                await this._keyboardHelper.Kick(activePlayer.Name);
+            }
+
             this.InsertEvent(this._activeOffer.Event);
             this.RemoveOffer(this._activeOffer);
             this._activeOffer = null;
@@ -258,6 +292,15 @@ namespace Lurker.UI.ViewModels
         }
 
         /// <summary>
+        /// Clears all.
+        /// </summary>
+        private void ClearAll()
+        {
+            this._removeActive?.Invoke();
+            this.Offers.Clear();
+        }
+
+        /// <summary>
         /// Sets the window position.
         /// </summary>
         /// <param name="windowInformation">The window information.</param>
@@ -274,22 +317,6 @@ namespace Lurker.UI.ViewModels
                 this.View.Left = windowInformation.Position.Left + yPosition;
                 this.View.Top = windowInformation.Position.Bottom - height - 12 + Margin;
             });
-        }
-
-        /// <summary>
-        /// Called when deactivating.
-        /// </summary>
-        /// <param name="close">Inidicates whether this instance will be closed.</param>
-        protected override void OnDeactivate(bool close)
-        {
-            if (close)
-            {
-                this._clientLurker.OutgoingOffer -= this.Lurker_OutgoingOffer;
-                this._clientLurker.TradeAccepted -= this.Lurker_TradeAccepted;
-                this.Offers.CollectionChanged -= this.Offers_CollectionChanged;
-            }
-
-            base.OnDeactivate(close);
         }
 
         /// <summary>
@@ -346,6 +373,8 @@ namespace Lurker.UI.ViewModels
         /// <param name="offer">The offer.</param>
         private void SetActiveOffer(OutgoingOfferViewModel offer)
         {
+            this.DockingHelper.SetForeground();
+
             if (offer.Active)
             {
                 return;

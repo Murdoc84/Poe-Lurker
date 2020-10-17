@@ -11,7 +11,6 @@ namespace Lurker.UI.ViewModels
     using Caliburn.Micro;
     using Lurker.Helpers;
     using Lurker.Models;
-    using Lurker.Patreon.Events;
     using Lurker.Services;
     using Lurker.UI.Models;
     using NuGet;
@@ -27,7 +26,7 @@ namespace Lurker.UI.ViewModels
         private static readonly int MaxLevel = 100;
         private List<Skill> _skills;
         private List<UniqueItem> _items;
-        private CharacterService _characterService;
+        private PlayerService _playerService;
         private string _playerName;
         private string _playerLevel;
         private IEventAggregator _eventAggregator;
@@ -43,12 +42,12 @@ namespace Lurker.UI.ViewModels
         /// <param name="dockingHelper">The docking helper.</param>
         /// <param name="processLurker">The process lurker.</param>
         /// <param name="settingsService">The settings service.</param>
-        /// <param name="characterService">The character service.</param>
-        public BuildTimelineViewModel(IWindowManager windowManager, DockingHelper dockingHelper, ProcessLurker processLurker, SettingsService settingsService, CharacterService characterService)
+        /// <param name="playerService">The character service.</param>
+        public BuildTimelineViewModel(IWindowManager windowManager, DockingHelper dockingHelper, ProcessLurker processLurker, SettingsService settingsService, PlayerService playerService)
             : base(windowManager, dockingHelper, processLurker, settingsService)
         {
-            this._characterService = characterService;
-            var firstPlayer = this._characterService.FirstPlayer;
+            this._playerService = playerService;
+            var firstPlayer = this._playerService.FirstPlayer;
 
             var progress = 0;
             if (firstPlayer != null)
@@ -70,16 +69,22 @@ namespace Lurker.UI.ViewModels
                 }
             }
 
-            this._characterService.PlayerChanged += this.PlayerChanged;
+            this._playerService.PlayerChanged += this.PlayerChanged;
 
             this._eventAggregator = IoC.Get<IEventAggregator>();
             this._skills = new List<Skill>();
             this._items = new List<UniqueItem>();
+            this.ActivePlayer = new PlayerViewModel(playerService);
         }
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the active player.
+        /// </summary>
+        public PlayerViewModel ActivePlayer { get; set; }
 
         /// <summary>
         /// Gets or sets the timeline.
@@ -123,6 +128,16 @@ namespace Lurker.UI.ViewModels
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Called when an attached view's Loaded event fires.
+        /// </summary>
+        /// <param name="view">The view.</param>
+        protected override void OnViewLoaded(object view)
+        {
+            base.OnViewLoaded(view);
+            this.View.Deactivated += this.View_Deactivated;
+        }
 
         /// <summary>
         /// Handles the message.
@@ -178,7 +193,7 @@ namespace Lurker.UI.ViewModels
                 }
                 while (removed);
             }
-            else
+            else if (message.Skill != null)
             {
                 var index = this._skills.IndexOf(message.Skill);
                 if (index == -1)
@@ -197,6 +212,11 @@ namespace Lurker.UI.ViewModels
         protected override void OnActivate()
         {
             this._eventAggregator.Subscribe(this);
+            if (this.View != null)
+            {
+                this.View.Deactivated += this.View_Deactivated;
+            }
+
             base.OnActivate();
         }
 
@@ -207,6 +227,7 @@ namespace Lurker.UI.ViewModels
         protected override void OnDeactivate(bool close)
         {
             this._eventAggregator.Unsubscribe(this);
+            this.View.Deactivated -= this.View_Deactivated;
             base.OnDeactivate(close);
         }
 
@@ -236,15 +257,29 @@ namespace Lurker.UI.ViewModels
         }
 
         /// <summary>
+        /// Handles the Deactivated event of the View control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        private void View_Deactivated(object sender, System.EventArgs e)
+        {
+            if (this.ActivePlayer != null)
+            {
+                this.ActivePlayer.SelectionVisible = false;
+            }
+        }
+
+        /// <summary>
         /// Players the changed.
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        private void PlayerChanged(object sender, PlayerLevelUpEvent e)
+        private void PlayerChanged(object sender, Player e)
         {
-            this.PlayerName = e.PlayerName;
-            this.PlayerLevel = e.Level.ToString();
-            this.Timeline.SetProgess(e.Level);
+            this.PlayerName = e.Name;
+            var level = e.GetCurrentLevel();
+            this.PlayerLevel = level.ToString();
+            this.Timeline.SetProgess(level);
         }
 
         /// <summary>
@@ -258,67 +293,50 @@ namespace Lurker.UI.ViewModels
                 return;
             }
 
-            var gemMaxValue = this.AddSkills();
-            var itemMaxValue = this.AddItems();
-
-            var maxValue = gemMaxValue > itemMaxValue ? gemMaxValue : itemMaxValue;
-            if (maxValue != 0)
-            {
-                this.Timeline.SetMaxValue(maxValue + 1);
-            }
-        }
-
-        /// <summary>
-        /// Adds the skill items.
-        /// </summary>
-        private int AddSkills()
-        {
-            var combineGems = this._skills.SelectMany(s => s.Gems);
-            foreach (var gems in combineGems.GroupBy(g => g.Level))
-            {
-                var skill = new Skill();
-                foreach (var gem in gems)
-                {
-                    skill.AddGem(gem);
-                }
-
-                var item = new TimelineItemViewModel(gems.Key)
-                {
-                    DetailedView = new SkillViewModel(skill),
-                };
-
-                this.Timeline.AddItem(item);
-            }
-
-            if (combineGems.IsEmpty())
-            {
-                return 0;
-            }
-
-            return combineGems.Max(g => g.Level);
+            this.AddItems();
         }
 
         /// <summary>
         /// Adds the items.
         /// </summary>
-        private int AddItems()
+        private void AddItems()
         {
-            foreach (var uniqueItem in this._items)
+            var combineGems = this._skills.SelectMany(s => s.Gems).AsEnumerable<WikiItem>();
+            var combineItems = combineGems.Concat(this._items);
+
+            foreach (var items in combineItems.GroupBy(g => g.Level))
             {
-                var item = new TimelineItemViewModel(uniqueItem.Level)
+                var views = new List<WikiItemBaseViewModel>();
+                foreach (var item in items)
                 {
-                    DetailedView = new UniqueItemViewModel(uniqueItem, false),
-                };
+                    WikiItemBaseViewModel view = null;
+                    if (item is Gem gem)
+                    {
+                        view = new GemViewModel(gem);
+                    }
 
-                this.Timeline.AddItem(item);
+                    if (item is UniqueItem uniqueItem)
+                    {
+                        view = new UniqueItemViewModel(uniqueItem, false);
+                    }
+
+                    if (view == null)
+                    {
+                        continue;
+                    }
+
+                    views.Add(view);
+                }
+
+                if (views.Any())
+                {
+                    var timelineItem = new TimelineItemViewModel(items.Key)
+                    {
+                        DetailedView = new GroupItemViewModel(views),
+                    };
+                    this.Timeline.AddItem(timelineItem);
+                }
             }
-
-            if (this._items.IsEmpty())
-            {
-                return 0;
-            }
-
-            return this._items.Max(g => g.Level);
         }
 
         #endregion
