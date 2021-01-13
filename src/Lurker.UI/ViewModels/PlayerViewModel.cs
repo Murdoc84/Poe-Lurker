@@ -6,7 +6,9 @@
 
 namespace Lurker.UI.ViewModels
 {
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Linq;
     using Lurker.Models;
     using Lurker.Services;
 
@@ -50,6 +52,11 @@ namespace Lurker.UI.ViewModels
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets the ignored mad mods.
+        /// </summary>
+        public IEnumerable<string> IgnoredMadMods => this._activePlayer == null ? Enumerable.Empty<string>() : this._activePlayer.IgnoredMapMods;
 
         /// <summary>
         /// Gets the display name.
@@ -124,6 +131,34 @@ namespace Lurker.UI.ViewModels
         }
 
         /// <summary>
+        /// Adds the ignored map mod.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        public void AddIgnoredMapMod(string id)
+        {
+            if (this._activePlayer != null && !this._activePlayer.IgnoredMapMods.Contains(id))
+            {
+                this._activePlayer.IgnoredMapMods.Add(id);
+                this._service.Save();
+            }
+        }
+
+        /// <summary>
+        /// Removes the ignored map mod.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        public void RemoveIgnoredMapMod(string id)
+        {
+            if (this._activePlayer == null)
+            {
+                return;
+            }
+
+            this._activePlayer.IgnoredMapMods.Remove(id);
+            this._service.Save();
+        }
+
+        /// <summary>
         /// Handles the PropertyChanged event of the PlayerViewModel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -155,12 +190,15 @@ namespace Lurker.UI.ViewModels
         /// <param name="e">The e.</param>
         private void Service_PlayerListChanged(object sender, System.Collections.Generic.IEnumerable<Player> e)
         {
-            this.Players.Clear();
-
-            foreach (var player in e)
+            Caliburn.Micro.Execute.OnUIThread(() =>
             {
-                this.Players.Add(player);
-            }
+                this.Players.Clear();
+
+                foreach (var player in e)
+                {
+                    this.Players.Add(player);
+                }
+            });
         }
 
         #endregion

@@ -21,6 +21,8 @@ namespace Lurker.UI.ViewModels
     using Lurker.Services;
     using Lurker.UI.Helpers;
     using MahApps.Metro.Controls;
+    using MahApps.Metro.Controls.Dialogs;
+    using Sentry;
 
     /// <summary>
     /// Represents the settings view model.
@@ -31,8 +33,12 @@ namespace Lurker.UI.ViewModels
         #region Fields
 
         private static readonly string LottieFileName = "LurckerIconSettings.json";
+        private Task _activateTask;
+        private bool _trialAvailable;
         private KeyboardHelper _keyboardHelper;
         private SettingsService _settingService;
+        private bool _modified;
+        private string _blessingtext;
         private bool _needsUpdate;
         private bool _pledging;
         private bool _activated;
@@ -83,9 +89,65 @@ namespace Lurker.UI.ViewModels
         #region Properties
 
         /// <summary>
+        /// Gets or sets the index of the select teb.
+        /// </summary>
+        public int SelectTabIndex { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="SettingsViewModel"/> is saved.
+        /// </summary>
+        public bool Modified
+        {
+            get
+            {
+                return this._modified;
+            }
+
+            private set
+            {
+                this._modified = value;
+                this.NotifyOfPropertyChange();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [trial available].
+        /// </summary>
+        public bool TrialAvailable
+        {
+            get
+            {
+                return this._trialAvailable;
+            }
+
+            set
+            {
+                this._trialAvailable = value;
+                this.NotifyOfPropertyChange();
+            }
+        }
+
+        /// <summary>
         /// Gets the animation file path.
         /// </summary>
         public string AnimationFilePath => AssetService.GetFilePath(LottieFileName);
+
+        /// <summary>
+        /// Gets the blessing text.
+        /// </summary>
+        public string BlessingText
+        {
+            get
+            {
+                return this._blessingtext;
+            }
+
+            private set
+            {
+                this._blessingtext = value;
+                this.NotifyOfPropertyChange();
+            }
+        }
 
         /// <summary>
         /// Gets or sets the color of the lifebar.
@@ -141,7 +203,13 @@ namespace Lurker.UI.ViewModels
         /// <summary>
         /// Gets a value indicating whether this <see cref="SettingsViewModel"/> is connected.
         /// </summary>
-        public bool NotConnected => !new Patreon.TokenService().Connected;
+        public bool NotConnected
+        {
+            get
+            {
+                return !new Patreon.TokenService().Connected;
+            }
+        }
 
         /// <summary>
         /// Gets the patreon identifier.
@@ -630,10 +698,25 @@ namespace Lurker.UI.ViewModels
         #region Methods
 
         /// <summary>
+        /// Opens the dashboard.
+        /// </summary>
+        public void OpenDashboard()
+        {
+            var dashBoard = IoC.Get<DashboardViewModel>();
+            var eventAggregator = IoC.Get<IEventAggregator>();
+            eventAggregator.PublishOnUIThread(dashBoard);
+        }
+
+        /// <summary>
         /// Gets the patreon identifier.
         /// </summary>
         public void GetPatreonId()
         {
+            if (string.IsNullOrEmpty(this.PatreonId))
+            {
+                return;
+            }
+
             Clipboard.SetText(this.PatreonId);
         }
 
@@ -709,6 +792,10 @@ namespace Lurker.UI.ViewModels
                     this.Pledging = await this._currentPatreonService.IsPledging();
                     if (this.Pledging)
                     {
+                        this.TrialAvailable = false;
+                        var time = this._currentPatreonService.GetTrialRemainingTime();
+                        this.BlessingText = GetBlessingText(time);
+
                         this.SearchEnabled = true;
                         this.DashboardEnabled = true;
                     }
@@ -719,6 +806,43 @@ namespace Lurker.UI.ViewModels
             catch (AuthenticationException)
             {
             }
+        }
+
+        /// <summary>
+        /// Starts the trial.
+        /// </summary>
+        public async void StartTrial()
+        {
+            await this.ShowProgress("Hold on", "Preparing the trial...", async () =>
+            {
+                using (var service = new Patreon.PatreonService())
+                {
+                    service.StartTrial();
+                    var pledging = await service.IsPledging();
+                    if (pledging)
+                    {
+                        this.SearchEnabled = true;
+                        this.DashboardEnabled = true;
+
+                        var time = service.GetTrialRemainingTime();
+                        this.BlessingText = GetBlessingText(time);
+                    }
+
+                    this.TrialAvailable = false;
+                    this.Pledging = pledging;
+
+                    SentrySdk.CaptureMessage("New Trial", Sentry.Protocol.SentryLevel.Info);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Saves the settings.
+        /// </summary>
+        public async void SaveSettings()
+        {
+            await this.ShowProgress("Hold on", "Saving setings...", () => this._settingService.Save());
+            this.Modified = false;
         }
 
         /// <summary>
@@ -750,13 +874,20 @@ namespace Lurker.UI.ViewModels
         /// Called when deactivating.
         /// </summary>
         /// <param name="close">Inidicates whether this instance will be closed.</param>
-        protected override void OnDeactivate(bool close)
+        protected override async void OnDeactivate(bool close)
         {
             if (close)
             {
+                if (this._activateTask != null)
+                {
+                    await this._activateTask;
+                }
+
                 this._settingService.Save();
                 this.OnClose?.Invoke(this, EventArgs.Empty);
                 this._activated = false;
+                this.SelectTabIndex = 0;
+                this.Modified = false;
             }
 
             base.OnDeactivate(close);
@@ -765,31 +896,34 @@ namespace Lurker.UI.ViewModels
         /// <summary>
         /// Called when activating.
         /// </summary>
-        protected async override void OnActivate()
+        protected override void OnActivate()
         {
-            if (!this.NotConnected)
+            this._activateTask = Task.Run(async () =>
             {
-                try
+                using (var service = new Patreon.PatreonService())
                 {
-                    using (var service = new Patreon.PatreonService())
+                    this.Pledging = await service.IsPledging();
+
+                    if (!this.Pledging)
                     {
-                        this.Pledging = await service.IsPledging();
+                        this.TrialAvailable = service.TrialAvailable;
+                        this.SearchEnabled = false;
+                        this.DashboardEnabled = false;
+                    }
+                    else
+                    {
+                        if (service.IsTrialValid())
+                        {
+                            var time = service.GetTrialRemainingTime();
+                            this.BlessingText = GetBlessingText(time);
+                        }
+                        else
+                        {
+                            this.BlessingText = "A blessing I can’t deny";
+                        }
                     }
                 }
-                catch
-                {
-                }
-            }
-            else
-            {
-                this.Pledging = false;
-            }
-
-            if (!this.Pledging)
-            {
-                this.SearchEnabled = false;
-                this.DashboardEnabled = false;
-            }
+            });
 
             this.AlertVolume = (int)(this._settingService.AlertVolume * 100);
             this.JoinHideoutVolume = (int)(this._settingService.JoinHideoutVolume * 100);
@@ -797,6 +931,32 @@ namespace Lurker.UI.ViewModels
             base.OnActivate();
 
             this._activated = true;
+        }
+
+        /// <summary>
+        /// Gets the blessing text.
+        /// </summary>
+        /// <param name="time">The time.</param>
+        /// <returns>The blessing trial text.</returns>
+        private static string GetBlessingText(TimeSpan time)
+        {
+            if (time == TimeSpan.Zero)
+            {
+                return "A blessing I can’t deny";
+            }
+
+            var text = string.Empty;
+            if (time.Days > 0)
+            {
+                return $"{time.Days} days, {time.Hours} hours, {time.Minutes} minutes";
+            }
+
+            if (time.Hours > 0)
+            {
+                return $"{time.Hours} hours, {time.Minutes} minutes";
+            }
+
+            return $"{time.Minutes} minutes";
         }
 
         /// <summary>
@@ -831,11 +991,21 @@ namespace Lurker.UI.ViewModels
         /// <param name="e">The <see cref="System.ComponentModel.PropertyChangedEventArgs"/> instance containing the event data.</param>
         private void SettingsViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            if (e.PropertyName != nameof(this.SelectTabIndex) && e.PropertyName != nameof(this.Modified) && e.PropertyName != nameof(this.IsActive))
+            {
+                if (!this._activated || !this._activateTask.IsCompleted)
+                {
+                    return;
+                }
+
+                this.Modified = true;
+            }
+
             if (e.PropertyName == nameof(this.AlertVolume))
             {
                 this._settingService.AlertVolume = (float)this.AlertVolume / 100;
 
-                if (!this._activated)
+                if (!this._activated || !this._activateTask.IsCompleted)
                 {
                     return;
                 }
@@ -854,7 +1024,7 @@ namespace Lurker.UI.ViewModels
             {
                 this._settingService.JoinHideoutVolume = (float)this.JoinHideoutVolume / 100;
 
-                if (!this._activated)
+                if (!this._activated || !this._activateTask.IsCompleted)
                 {
                     return;
                 }
@@ -885,6 +1055,26 @@ namespace Lurker.UI.ViewModels
             }
 
             callback();
+        }
+
+        /// <summary>
+        /// Shows the progress.
+        /// </summary>
+        /// <param name="title">The title.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="action">The action.</param>
+        private async Task ShowProgress(string title, string message, System.Action action)
+        {
+            var coordinator = DialogCoordinator.Instance;
+            var controller = await coordinator.ShowProgressAsync(this, title, message);
+            controller.SetIndeterminate();
+
+            await Task.Run(() =>
+            {
+                action?.Invoke();
+            });
+
+            await controller.CloseAsync();
         }
 
         #endregion

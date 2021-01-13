@@ -9,9 +9,9 @@ namespace Lurker.Helpers
     using System;
     using System.Threading;
     using System.Threading.Tasks;
-    using System.Windows;
     using Lurker.Patreon.Models;
     using Lurker.Patreon.Parsers;
+    using WK.Libraries.SharpClipboardNS;
 
     /// <summary>
     /// Represents the Clipboard helper.
@@ -21,6 +21,8 @@ namespace Lurker.Helpers
         #region Fields
 
         private static readonly ItemParser ItemParser = new ItemParser();
+        private static readonly SharpClipboard Clipboard = new SharpClipboard();
+        private static string _lastText;
 
         #endregion
 
@@ -32,13 +34,7 @@ namespace Lurker.Helpers
         /// <returns>The clipboard text.</returns>
         public static string GetClipboardText()
         {
-            var clipboardText = string.Empty;
-            RetryOnMainThread(() =>
-            {
-                clipboardText = Clipboard.GetText();
-            });
-
-            return clipboardText;
+            return GetLegacy();
         }
 
         /// <summary>
@@ -48,7 +44,7 @@ namespace Lurker.Helpers
         {
             RetryOnMainThread(() =>
             {
-                 Clipboard.Clear();
+                 System.Windows.Clipboard.Clear();
             });
         }
 
@@ -60,8 +56,7 @@ namespace Lurker.Helpers
         {
             try
             {
-                var text = GetClipboardText();
-                return ItemParser.Parse(text);
+                return ItemParser.Parse(GetClipboardText());
             }
             catch
             {
@@ -104,6 +99,33 @@ namespace Lurker.Helpers
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
             thread.Join();
+        }
+
+        private static string GetLegacy()
+        {
+            var clipboardText = string.Empty;
+            RetryOnMainThread(() =>
+            {
+                clipboardText = System.Windows.Clipboard.GetText();
+            });
+
+            return clipboardText;
+        }
+
+        /// <summary>
+        /// Gets the sharp clipboard.
+        /// </summary>
+        /// <returns>The text.</returns>
+        private static string GetSharpClipboard()
+        {
+            var text = Clipboard.ClipboardText;
+            if (_lastText == text)
+            {
+                return string.Empty;
+            }
+
+            _lastText = text;
+            return text;
         }
 
         #endregion

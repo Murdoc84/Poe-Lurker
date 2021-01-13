@@ -3,13 +3,10 @@
     "Id": "AbyssalCry",
     "Support": false,
     "Location": {
-      "Quest": "A Fixture of Fate",
+      "Quest": "Lost in Love",
       "Act": "Act 3",
-      "Npc": "Siosa",
+      "Npc": "Clarissa",
       "Classes": [
-        "Witch",
-        "Shadow",
-        "Ranger",
         "Duelist",
         "Marauder",
         "Templar",
@@ -1153,15 +1150,12 @@
     "Id": "DamageOverTimeAura",
     "Support": false,
     "Location": {
-      "Quest": "A Fixture of Fate",
+      "Quest": "Lost in Love",
       "Act": "Act 3",
-      "Npc": "Siosa",
+      "Npc": "Clarissa",
       "Classes": [
         "Witch",
         "Shadow",
-        "Ranger",
-        "Duelist",
-        "Marauder",
         "Templar",
         "Scion"
       ]
@@ -1576,7 +1570,7 @@
     "Id": "EnduranceChargeOnMeleeStun",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -1864,7 +1858,17 @@
   {
     "Id": "Firewall",
     "Support": false,
-    "Location": null,
+    "Location": {
+      "Quest": "Breaking Some Eggs",
+      "Act": "Act 1",
+      "Npc": "Nessa",
+      "Classes": [
+        "Witch",
+        "Shadow",
+        "Templar",
+        "Scion"
+      ]
+    },
     "Name": "Flame Wall",
     "WikiUrl": "https://pathofexile.gamepedia.com/Flame_Wall",
     "ImageUrl": "https://static.wikia.nocookie.net/pathofexile_gamepedia/images/2/25/Flame_Wall_inventory_icon.png/revision/latest?cb=20200929172807&amp;format=original",
@@ -1930,12 +1934,14 @@
     "Id": "Flameblast",
     "Support": false,
     "Location": {
-      "Quest": "Sever the Right Hand",
+      "Quest": "A Fixture of Fate",
       "Act": "Act 3",
-      "Npc": "Clarissa",
+      "Npc": "Siosa",
       "Classes": [
         "Witch",
         "Shadow",
+        "Ranger",
+        "Duelist",
         "Marauder",
         "Templar",
         "Scion"
@@ -1950,12 +1956,16 @@
     "Id": "FlamethrowerTrap",
     "Support": false,
     "Location": {
-      "Quest": "Sever the Right Hand",
+      "Quest": "A Fixture of Fate",
       "Act": "Act 3",
-      "Npc": "Clarissa",
+      "Npc": "Siosa",
       "Classes": [
         "Witch",
         "Shadow",
+        "Ranger",
+        "Duelist",
+        "Marauder",
+        "Templar",
         "Scion"
       ]
     },
@@ -2230,13 +2240,17 @@
     "Id": "GlacialCascade",
     "Support": false,
     "Location": {
-      "Quest": "Sever the Right Hand",
+      "Quest": "A Fixture of Fate",
       "Act": "Act 3",
-      "Npc": "Clarissa",
+      "Npc": "Siosa",
       "Classes": [
         "Witch",
         "Shadow",
-        "Templar"
+        "Ranger",
+        "Duelist",
+        "Marauder",
+        "Templar",
+        "Scion"
       ]
     },
     "Name": "Glacial Cascade",
@@ -2670,7 +2684,16 @@
   {
     "Id": "ImpactingSteel",
     "Support": false,
-    "Location": null,
+    "Location": {
+      "Quest": "Enemy at the Gate",
+      "Act": "Act 1",
+      "Npc": "Nessa",
+      "Classes": [
+        "Ranger",
+        "Duelist",
+        "Scion"
+      ]
+    },
     "Name": "Splitting Steel",
     "WikiUrl": "https://pathofexile.gamepedia.com/Splitting_Steel",
     "ImageUrl": "https://static.wikia.nocookie.net/pathofexile_gamepedia/images/6/61/Splitting_Steel_inventory_icon.png/revision/latest?cb=20200929172847&amp;format=original",
@@ -4052,7 +4075,16 @@
   {
     "Id": "SnipersMark",
     "Support": false,
-    "Location": null,
+    "Location": {
+      "Quest": "Lost in Love",
+      "Act": "Act 3",
+      "Npc": "Clarissa",
+      "Classes": [
+        "Shadow",
+        "Ranger",
+        "Duelist"
+      ]
+    },
     "Name": "Sniper's Mark",
     "WikiUrl": "https://pathofexile.gamepedia.com/Sniper%27s_Mark",
     "ImageUrl": "https://static.wikia.nocookie.net/pathofexile_gamepedia/images/3/30/Sniper%27s_Mark_inventory_icon.png/revision/latest?cb=20130626162348&amp;format=original",
@@ -4876,7 +4908,7 @@
     "Id": "SupportBloodlust",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -4897,7 +4929,7 @@
     "Id": "SupportBluntWeapon",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -5309,7 +5341,7 @@
     "Id": "SupportColdToFire",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -5328,7 +5360,7 @@
     "Id": "SupportConcentratedEffect",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -5347,7 +5379,7 @@
     "Id": "SupportControlledDestruction",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -5375,7 +5407,7 @@
     "Id": "SupportCullingStrike",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -5396,7 +5428,20 @@
   {
     "Id": "SupportCurseOnHit",
     "Support": true,
-    "Location": null,
+    "Location": {
+      "Quest": "The Eternal Nightmare",
+      "Act": "Act 4",
+      "Npc": "Petarus and Vanja",
+      "Classes": [
+        "Witch",
+        "Shadow",
+        "Ranger",
+        "Duelist",
+        "Marauder",
+        "Templar",
+        "Scion"
+      ]
+    },
     "Name": "Hextouch Support",
     "WikiUrl": "https://pathofexile.gamepedia.com/Hextouch_Support",
     "ImageUrl": "https://static.wikia.nocookie.net/pathofexile_gamepedia/images/0/02/Hextouch_Support_inventory_icon.png/revision/latest?cb=20160408161437&amp;format=original",
@@ -5436,7 +5481,7 @@
     "Id": "SupportDeadlyAilments",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -5521,7 +5566,7 @@
     "Id": "SupportElementalFocus",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -5593,7 +5638,7 @@
     "Id": "SupportFasterAttack",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -5614,7 +5659,7 @@
     "Id": "SupportFasterCast",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6024,7 +6069,7 @@
     "Id": "SupportIncreasedCriticalDamage",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6080,7 +6125,7 @@
     "Id": "SupportIronGrip",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6100,7 +6145,7 @@
     "Id": "SupportIronWill",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6309,7 +6354,7 @@
     "Id": "SupportMeleeDamageOnFullLife",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6328,7 +6373,7 @@
     "Id": "SupportMeleePhysicalDamage",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6453,7 +6498,7 @@
     "Id": "SupportMinionFocusFire",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6471,7 +6516,7 @@
     "Id": "SupportMinionLife",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6507,7 +6552,7 @@
     "Id": "SupportMinionSpeed",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6676,7 +6721,7 @@
     "Id": "SupportPhysicalProjectileAttackDamage",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6694,7 +6739,7 @@
     "Id": "SupportPhysicalToLightning",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6731,7 +6776,7 @@
     "Id": "SupportPointBlank",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6768,7 +6813,7 @@
     "Id": "SupportPowerChargeOnCrit",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6816,7 +6861,7 @@
     "Id": "SupportPuncturingWeapon",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -6834,7 +6879,7 @@
     "Id": "SupportRage",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -7014,7 +7059,7 @@
     "Id": "SupportSlashingWeapon",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -7243,7 +7288,7 @@
     "Id": "SupportTrapAndMineDamage",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -7366,7 +7411,7 @@
     "Id": "SupportWeaponElementalDamage",
     "Support": true,
     "Location": {
-      "Quest": "The Root of the Problem",
+      "Quest": "Sharp and Cruel",
       "Act": "Act 2",
       "Npc": "Yeena",
       "Classes": [
@@ -7811,12 +7856,14 @@
     "Id": "VaalFlameblast",
     "Support": false,
     "Location": {
-      "Quest": "Sever the Right Hand",
+      "Quest": "A Fixture of Fate",
       "Act": "Act 3",
-      "Npc": "Clarissa",
+      "Npc": "Siosa",
       "Classes": [
         "Witch",
         "Shadow",
+        "Ranger",
+        "Duelist",
         "Marauder",
         "Templar",
         "Scion"

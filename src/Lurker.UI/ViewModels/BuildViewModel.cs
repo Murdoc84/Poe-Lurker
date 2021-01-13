@@ -239,7 +239,7 @@ namespace Lurker.UI.ViewModels
                     this.Build = service.Decode(buildValue);
 
                     this.Skills.Clear();
-                    foreach (var skill in this.Build.Skills.Select(s => new SkillViewModel(s, this.SettingsService.ToolTipEnabled)))
+                    foreach (var skill in this.Build.Skills.Select(s => new SkillViewModel(s, this.SettingsService.TimelineEnabled)))
                     {
                         skill.PropertyChanged += this.Skill_PropertyChanged;
                         this.Skills.Add(skill);
@@ -289,10 +289,12 @@ namespace Lurker.UI.ViewModels
         public void ClearBuild()
         {
             this.Build = null;
-            this.Skills.Clear();
-            this.UniqueItems.Clear();
+            Execute.OnUIThread(() =>
+            {
+                this.Skills.Clear();
+                this.UniqueItems.Clear();
+            });
             this.HasNoBuild = true;
-
             this._eventAggregator.PublishOnUIThread(new SkillMessage() { Clear = true });
         }
 
@@ -342,10 +344,10 @@ namespace Lurker.UI.ViewModels
             var margin = PoeApplicationContext.WindowStyle == WindowStyle.Windowed ? 10 : 0;
             Execute.OnUIThread(() =>
             {
-                this.View.Height = 500;
-                this.View.Width = 350;
-                this.View.Left = windowInformation.Position.Right - 350 - margin;
-                this.View.Top = windowInformation.Position.Bottom - value - 500 - margin;
+                this.View.Height = this.ApplyScalingY(500);
+                this.View.Width = this.ApplyScalingX(350);
+                this.View.Left = this.ApplyScalingX(windowInformation.Position.Right - 350 - margin);
+                this.View.Top = this.ApplyScalingY(windowInformation.Position.Bottom - value - 500 - margin);
             });
         }
 
@@ -440,6 +442,11 @@ namespace Lurker.UI.ViewModels
                 return;
             }
 
+            if (this._activePlayer == null)
+            {
+                return;
+            }
+
             var index = this.UniqueItems.IndexOf(item);
             var settings = this._activePlayer.Build;
             if (item.Selected)
@@ -527,6 +534,11 @@ namespace Lurker.UI.ViewModels
                 return;
             }
 
+            if (this._activePlayer == null)
+            {
+                return;
+            }
+
             var index = this.Skills.IndexOf(skill);
             var settings = this._activePlayer.Build;
 
@@ -558,7 +570,7 @@ namespace Lurker.UI.ViewModels
         private void SetTimelineSettings(bool enabled)
         {
             this.SettingsService.TimelineEnabled = enabled;
-            this.SettingsService.Save();
+            this.SettingsService.Save(false);
 
             foreach (var skill in this.Skills)
             {

@@ -10,13 +10,15 @@
         xmlns:lottieSharp="clr-namespace:LottieSharp;assembly=LottieSharp"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         ResizeMode="CanMinimize"
+        xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+        Dialog:DialogParticipation.Register="{Binding}"
         mc:Ignorable="d" Height="450" Width="800">
     <Grid>
         <Grid.Resources>
             <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.AnimatedTabControl.xaml" />
         </Grid.Resources>
 
-        <Controls:MetroAnimatedTabControl Controls:TabControlHelper.IsUnderlined="True" Controls:TabControlHelper.Underlined="TabPanel" TabStripPlacement="Left">
+        <Controls:MetroAnimatedTabControl Controls:TabControlHelper.IsUnderlined="True" SelectedIndex="{Binding SelectTabIndex}" Controls:TabControlHelper.Underlined="TabPanel" TabStripPlacement="Left">
             <TabItem Header="Message" Width="175">
                 <StackPanel>
                     <Label Content="Message" Style="{DynamicResource LabelHeaderStyle}" />
@@ -56,7 +58,7 @@
                                     </StackPanel>
                                 </DataTemplate>
                             </Controls:MetroHeader.HeaderTemplate>
-                            <TextBox Text="{Binding BusyMessage}" x:Name="BusyMessage"/>
+                            <TextBox Text="{Binding BusyMessage, UpdateSourceTrigger=PropertyChanged}" x:Name="BusyMessage"/>
                         </Controls:MetroHeader>
                         <Controls:MetroHeader Header="Still Interested">
                             <Controls:MetroHeader.HeaderTemplate>
@@ -75,7 +77,7 @@
                                     </StackPanel>
                                 </DataTemplate>
                             </Controls:MetroHeader.HeaderTemplate>
-                            <TextBox Text="{Binding StillInterestedMessage}"/>
+                            <TextBox Text="{Binding StillInterestedMessage, UpdateSourceTrigger=PropertyChanged}" />
                         </Controls:MetroHeader>
                         <Controls:MetroHeader Header="Sold">
                             <Controls:MetroHeader.HeaderTemplate>
@@ -93,7 +95,7 @@
                                     </StackPanel>
                                 </DataTemplate>
                             </Controls:MetroHeader.HeaderTemplate>
-                            <TextBox Text="{Binding SoldMessage}"/>
+                            <TextBox Text="{Binding SoldMessage, UpdateSourceTrigger=PropertyChanged}"/>
                         </Controls:MetroHeader>
                         <Controls:MetroHeader Header="Thank you">
                             <Controls:MetroHeader.HeaderTemplate>
@@ -106,7 +108,7 @@
                                     </StackPanel>
                                 </DataTemplate>
                             </Controls:MetroHeader.HeaderTemplate>
-                            <TextBox Text="{Binding ThankYouMessage}" Controls:TextBoxHelper.Watermark="No whisper"/>
+                            <TextBox Text="{Binding ThankYouMessage, UpdateSourceTrigger=PropertyChanged}" Controls:TextBoxHelper.Watermark="No whisper"/>
                         </Controls:MetroHeader>
                     </StackPanel>
                 </StackPanel>
@@ -350,32 +352,70 @@
 
                         <Grid Margin="0,-10,0,0">
                             <local:IconPack Foreground="{DynamicResource AccentColorBrush}"
-                                            Width="225"
+                                            Width="150"
                                             Margin="0,20,0,10"
                                             Visibility="{Binding Pledging, Converter={StaticResource BooleanToVisibilityConverter}}"
                                             Data="{x:Static local:IconPackData.Beer}"/>
                             <local:IconPack Foreground="{DynamicResource AccentColorBrush1}"
-                                            Width="225"
+                                            Width="150"
                                             Margin="0,20,0,10"
                                             Visibility="{Binding NotConnected, Converter={StaticResource BooleanToVisibilityConverter}}"
                                             Data="{x:Static local:IconPackData.Beer}"/>
                             <local:IconPack Foreground="{DynamicResource AccentColorBrush1}"
-                                            Width="225"
+                                            Width="150"
                                             Margin="0,20,0,10"
                                             Visibility="{Binding NotPledging, Converter={StaticResource BooleanToVisibilityConverter}}"
                                             Data="{x:Static local:IconPackData.Beer}"/>
                         </Grid>
-                        <Button Style="{DynamicResource Tag}" Controls:ButtonHelper.PreserveTextCase="True" x:Name="GetPatreonId" HorizontalAlignment="Center" Visibility="{Binding Pledging, Converter={StaticResource BooleanToVisibilityConverter}}" FontSize="14">A blessing I can’t deny</Button>
-                        <Button x:Name="LoginToPatreon" Visibility="{Binding NotConnected, Converter={StaticResource BooleanToVisibilityConverter}}">Login with Patreon</Button>
-                        <Button x:Name="Pledge" Visibility="{Binding ConnectedWithoutPledging, Converter={StaticResource BooleanToVisibilityConverter}}">Become a patron</Button>
+                        <Button Style="{DynamicResource Tag}" 
+                                Controls:ButtonHelper.PreserveTextCase="True" 
+                                x:Name="GetPatreonId" HorizontalAlignment="Center" 
+                                Visibility="{Binding Pledging, Converter={StaticResource BooleanToVisibilityConverter}}" 
+                                Margin="0,0,0,10"
+                                Content="{Binding BlessingText}"
+                                FontSize="20"></Button>
+                        
+                        <Button x:Name="LoginToPatreon"
+                                Style="{DynamicResource Patreon}"
+                                FontSize="20"
+                                Margin="0,0,0,10"
+                                Visibility="{Binding NotConnected, Converter={StaticResource BooleanToVisibilityConverter}}">Login with Patreon</Button>
+                        <Button x:Name="Pledge" 
+                                Style="{DynamicResource Patreon}" 
+                                Margin="0,0,0,10"
+                                FontSize="20"
+                                Visibility="{Binding ConnectedWithoutPledging, Converter={StaticResource BooleanToVisibilityConverter}}">Become a patron</Button>
+                        <Button x:Name="StartTrial" 
+                                FontSize="16" 
+                                Style="{DynamicResource Tag}"
+                                
+                                
+                                Visibility="{Binding TrialAvailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button.Content>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="40"></ColumnDefinition>
+                                        <ColumnDefinition></ColumnDefinition>
+                                        <ColumnDefinition Width="40"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="1">Free Trial</TextBlock>
+                                    <TextBlock
+                                        Grid.Column="2"
+                                        HorizontalAlignment="Center"
+                                        FontSize="10" Foreground="Gray">(7 days)</TextBlock>
+                                </Grid>
+
+                            </Button.Content>
+                        </Button>
                     </StackPanel>
-                    <Grid Grid.Row="2" Height="70" Visibility="{Binding Pledging, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid Grid.Row="2" Height="70" IsEnabled="{Binding Pledging}">
                         <StackPanel Margin="30,0,0,0" Orientation="Horizontal">
                             <Controls:ToggleSwitch Header="Item Lurker"
                                                    IsChecked="{Binding SearchEnabled}"/>
                             <Controls:ToggleSwitch Margin="30,0,0,0"
                                                    Header="Dashboard"
                                                    IsChecked="{Binding DashboardEnabled}"/>
+                            <Button x:Name="OpenDashboard" Height="50" Style="{DynamicResource Tag}" FontSize="18">Open </Button>
                         </StackPanel>
                     </Grid>
                 </Grid>
@@ -383,7 +423,7 @@
         </Controls:MetroAnimatedTabControl>
         <StackPanel Orientation="Horizontal" Visibility="{Binding UpToDate, Converter={StaticResource BooleanToVisibilityConverter}}">
             <Button x:Name="UserGuide"
-                Margin="8,8,8,8" 
+                Margin="20,8,8,8" 
                 VerticalAlignment="Bottom" 
                 HorizontalAlignment="Left" 
                 Height="10" >Guide</Button>
@@ -401,6 +441,17 @@
                 HorizontalAlignment="Left" 
                 Height="10" 
                 Width="80">Update</Button>
+
+        <Button x:Name="SaveSettings"
+                Style="{DynamicResource Tag}"
+                FontSize="20"
+                VerticalAlignment="Bottom" 
+                HorizontalAlignment="Right" 
+                Visibility="{Binding Modified, Converter={StaticResource BooleanToVisibilityConverter}}"
+                Height="40" 
+                Width="200"
+                Margin="0,0,8,8"
+                >Save</Button>
         <lottieSharp:LottieAnimationView
             x:Name="LottieAnimationView"
             FileName="{Binding AnimationFilePath}"

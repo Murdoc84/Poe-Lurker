@@ -32,6 +32,7 @@ namespace Lurker.UI
     {
         #region Fields
 
+        private PlayerViewModel _activePlayer;
         private SimpleContainer _container;
         private ProcessLurker _processLurker;
         private ClientLurker _currentLurker;
@@ -43,12 +44,12 @@ namespace Lurker.UI
         private TradebarViewModel _incomingTradeBarOverlay;
         private BuildTimelineViewModel _skillTimelineOverlay;
         private OutgoingbarViewModel _outgoingTradeBarOverlay;
+        private PopupViewModel _popup;
         private LifeBulbViewModel _lifeBulbOverlay;
         private ManaBulbViewModel _manaBulbOverlay;
         private HideoutViewModel _hideoutOverlay;
         private SettingsService _settingsService;
         private AfkService _afkService;
-        private ItemOverlayViewModel _itemOverlay;
         private SettingsViewModel _settingsViewModel;
         private BuildViewModel _buildViewModel;
         private HelpViewModel _helpOverlay;
@@ -56,7 +57,6 @@ namespace Lurker.UI
         private bool _startWithWindows;
         private bool _needUpdate;
         private bool _showInTaskBar;
-        private bool _isItemOverlayOpen;
         private bool _showUpdateSuccess;
         private bool _closing;
         private Task _openingTask;
@@ -102,6 +102,7 @@ namespace Lurker.UI
                 }
             }
 
+            // this.ActivateItem(IoC.Get<TutorialViewModel>());
             this._eventAggregator.Subscribe(this);
         }
 
@@ -110,21 +111,30 @@ namespace Lurker.UI
         #region Properties
 
         /// <summary>
-        /// Gets or sets the item overlay view model.
+        /// Gets the active player.
         /// </summary>
-        public ItemOverlayViewModel ItemOverlayViewModel
+        public PlayerViewModel ActivePlayer
         {
             get
             {
-                return this._itemOverlay;
+                return this._activePlayer;
             }
 
-            set
+            private set
             {
-                this._itemOverlay = value;
-                this.NotifyOfPropertyChange();
+                if (this._activePlayer != value)
+                {
+                    this._activePlayer = value;
+                    this.NotifyOfPropertyChange();
+                    this.NotifyOfPropertyChange("ActivePlayerVisible");
+                }
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether [active player visible].
+        /// </summary>
+        public bool ActivePlayerVisible => this.ActivePlayer != null;
 
         /// <summary>
         /// Gets the command.
@@ -144,23 +154,6 @@ namespace Lurker.UI
             set
             {
                 this._showInTaskBar = value;
-                this.NotifyOfPropertyChange();
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is item open.
-        /// </summary>
-        public bool IsItemOverlayOpen
-        {
-            get
-            {
-                return this._isItemOverlayOpen;
-            }
-
-            set
-            {
-                this._isItemOverlayOpen = value;
                 this.NotifyOfPropertyChange();
             }
         }
@@ -407,6 +400,7 @@ namespace Lurker.UI
                 this._clipboardLurker = new ClipboardLurker();
 
                 this._container.RegisterInstance(typeof(ProcessLurker), null, this._processLurker);
+                this._container.RegisterInstance(typeof(MouseLurker), null, this._mouseLurker);
                 this._container.RegisterInstance(typeof(ClientLurker), null, this._currentLurker);
                 this._container.RegisterInstance(typeof(PlayerService), null, this._currentCharacterService);
                 this._container.RegisterInstance(typeof(ClipboardLurker), null, this._clipboardLurker);
@@ -416,6 +410,7 @@ namespace Lurker.UI
                 this._skillTimelineOverlay = this._container.GetInstance<BuildTimelineViewModel>();
                 this._incomingTradeBarOverlay = this._container.GetInstance<TradebarViewModel>();
                 this._outgoingTradeBarOverlay = this._container.GetInstance<OutgoingbarViewModel>();
+                this._popup = this._container.GetInstance<PopupViewModel>();
                 this._lifeBulbOverlay = this._container.GetInstance<LifeBulbViewModel>();
                 this._manaBulbOverlay = this._container.GetInstance<ManaBulbViewModel>();
                 this._afkService = this._container.GetInstance<AfkService>();
@@ -450,6 +445,10 @@ namespace Lurker.UI
             });
         }
 
+        /// <summary>
+        /// Toggles the build helper.
+        /// </summary>
+        /// <param name="show">if set to <c>true</c> [show].</param>
         private void ToggleBuildHelper(bool show)
         {
             if (show)
@@ -483,6 +482,7 @@ namespace Lurker.UI
         /// </summary>
         private void CleanUp()
         {
+            this.ActivePlayer = null;
             this._container.UnregisterHandler<ClientLurker>();
             this._container.UnregisterHandler<PlayerService>();
             this._container.UnregisterHandler<ProcessLurker>();
@@ -558,6 +558,8 @@ namespace Lurker.UI
             this._currentLurker.AdminRequested += this.CurrentLurker_AdminRequested;
 
             this._currentCharacterService = new PlayerService(this._currentLurker);
+            this.ActivePlayer = new PlayerViewModel(this._currentCharacterService);
+            this.NotifyOfPropertyChange("ActivePlayer");
 
             if (this._closing)
             {
@@ -632,7 +634,7 @@ namespace Lurker.UI
                     }
                     else if (this._settingsService.ShowStartupAnimation)
                     {
-                        this._eventAggregator.PublishOnUIThread(new ManaBulbMessage() { View = new SplashscreenViewModel(), DisplayTime = TimeSpan.FromSeconds(5) });
+                        this._eventAggregator.PublishOnUIThread(new ManaBulbMessage() { View = new SplashscreenViewModel(this._settingsViewModel, this._eventAggregator), DisplayTime = TimeSpan.FromSeconds(10) });
                     }
                 }
             }
@@ -642,12 +644,26 @@ namespace Lurker.UI
         /// Clipboards the lurker newitem.
         /// </summary>
         /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        private void MouseLurker_Newitem(object sender, PoeItem e)
+        /// <param name="item">The item.</param>
+        private void MouseLurker_Newitem(object sender, PoeItem item)
         {
-            this.IsItemOverlayOpen = false;
-            this.ItemOverlayViewModel = new ItemOverlayViewModel(e, () => { this.IsItemOverlayOpen = false; });
-            this.IsItemOverlayOpen = true;
+            if (!this._popup.IsActive)
+            {
+                this.ActivateItem(this._popup);
+            }
+
+            if (item is Map map)
+            {
+                this._popup.Open(new MapViewModel(map, this.ActivePlayer, this._currentCharacterService));
+            }
+            else if (item is Weapon weapon)
+            {
+                this._popup.Open(new WeaponViewModel(weapon));
+            }
+            else if (item.Rarity != Rarity.Currency)
+            {
+                this._popup.Open(new ItemOverlayViewModel(item));
+            }
         }
 
         /// <summary>
